@@ -51,9 +51,50 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 
 插件支持主题自定义跳转页面模板：
 
-1. 将 `go.php.demo` 复制到你的主题目录
-2. 重命名为 `go.php`
-3. 根据主题风格自定义样式和布局
+1. 在当前主题文件夹中新建一个文件 `go.php`
+2. 将下面内容复制至该文件中
+3. 保存并上传至主题目录
+```php
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+    <!-- 基础设置 -->
+    <meta charset="<?php echo $options->charset(); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php echo ($plugin->title ?? '即将跳转'); ?></title>
+    <style>
+        body{font-family:Arial,sans-serif;margin:0;padding:0;display:flex;justify-content:center;align-items:center;height:100vh;background-color:#f5f5f5}
+        .container{text-align:center;padding:2rem;background-color:#fff;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);
+        max-width:500px;width:90%}
+        h1{color:#333}p{margin:1rem 0;color:#666}
+        .url{word-break:break-all;background-color:#f0f0f0;padding:10px;border-radius:3px;margin:15px 0}
+        .button{display:inline-block;width:50%;padding:10px 20px;color:#fff;text-decoration:none;border-radius:3px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <?php if (!empty($plugin->tip)):?><h1><?php echo $plugin->tip;?></h1><?php endif;?>
+        <?php if (!empty($plugin->tip1)):?><p><?php echo $plugin->tip1;?></p><?php endif;?>
+        <div class="url"><?php echo $target; ?></div>
+        <?php if (!empty($plugin->tipContent)):?><p><?php echo $plugin->tipContent; ?></p><?php endif;?>
+        <a id="jump" class="button" href="{$url}" rel="nofollow noopener noreferrer" style="background-color:<?php echo $plugin->buttonColor ?? '#007bff'; ?>;">立即前往</a>
+        <p id="countdown">页面将在 <span id="timer"><?php echo intval($plugin->delay);?></span> 秒后自动跳转...</p>
+    </div>
+    <script>
+        var seconds = <?php echo intval($plugin->delay);?>;
+        var timer = document.getElementById('timer');
+        var interval = setInterval(() => {
+            seconds--;
+            timer.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = "<?php echo $target; ?>";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+```
 
 ### 可用变量
 

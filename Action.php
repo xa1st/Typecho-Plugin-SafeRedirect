@@ -44,12 +44,17 @@ class Action extends Widget {
         }
         // 获取主题配置并检测自定义跳转模板是否存在
         $options = Widget::widget('Widget_Options');
-        if ($options->theme && is_file($options->themeFile('go.php'))) {
-            // 准备模板变量并渲染自定义跳转页面
-            $this->_target = $target ;
-            $this->_title = _t('正在跳转到外部页面...');
-            $this->response->setStatus(200);
-            $this->need('go.php');
+        // 主题文件中的跳转标题
+        $file = __TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/' . $options->theme . '/go.php';
+        if ($options->theme && is_file($file)) {
+            // 获取主题配置
+            $safeRedirect = $options->plugin('SafeRedirect');
+            // 渲染自定义跳转模板，位置主题目录下的go.php，还要支持模板变量
+            $template_vars = ['target' => $target, 'options' => $options, 'plugin' => $safeRedirect];
+            // 将变量提取到当前作用域
+            extract($template_vars);
+            // 包含模板文件
+            include $file;
         } else {
             // 当模板不存在时执行基础跳转逻辑
             $this->_defaultRedirect($target);
@@ -64,18 +69,18 @@ class Action extends Widget {
         $url = htmlspecialchars($url);
         // 获取主题配置
         $safeRedirect = Widget::widget('Widget_Options')->plugin('SafeRedirect');
-        // 获取跳转提示
-        $tip = empty($safeRedirect->tip) ? '' : "<h1>{$safeRedirect->tip}</h1>";
-        // 获取安全警告内容
-        $tipContent = empty($safeRedirect->tipContent) ? '' : "<p>{$safeRedirect->tipContent}</p>";
-        // 获取跳转延时
-        $delay = intval($safeRedirect->delay) ?? 5;
         // 标题文字
-        $title = $safeRedirect->title ?? '外链跳转';
-        // 
-        $tip1 = empty($safeRedirect->tip1) ? '' : '<p>您正在离开本站，前往以下网址：</p>';
-        // 获取跳转提示内容
-        $tipContent1 = empty($safeRedirect->tipContent1) ? '' : "<p>{$safeRedirect->tipContent1}</p>";
+        $safeRedirect->title = $safeRedirect->title ?? '外链跳转';
+        // 获取跳转提示
+        $safeRedirect->tip = $safeRedirect->tip ? "<h1>{$safeRedirect->tip}</h1>" : '';
+        // 获取跳转副标题
+        $safeRedirect->tip1 = $safeRedirect->tip1 ? "<p>{$safeRedirect->tip1}</p>" : '';
+        // 获取跳转延时
+        $safeRedirect->delay = intval($safeRedirect->delay) ?? 5;
+        // 获取安全警告内容
+        $safeRedirect->tipContent = $safeRedirect->tipContent ? "<p>{$safeRedirect->tipContent}</p>" : '';
+        // 获取按钮颜色
+        $safeRedirect->buttonColor = $safeRedirect->buttonColor ? $safeRedirect->buttonColor : '#007bff';
         // 输出HTML
         echo <<<HTML
             <!DOCTYPE html>
@@ -83,20 +88,20 @@ class Action extends Widget {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>{$title}</title>
+                    <title>{$safeRedirect->title}</title>
                     <style>body{font-family:Arial,sans-serif;margin:0;padding:0;display:flex;justify-content:center;align-items:center;height:100vh;background-color:#f5f5f5}.container{text-align:center;padding:2rem;background-color:#fff;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,.1);max-width:500px;width:90%}h1{color:#333}p{margin:1rem 0;color:#666}.url{word-break:break-all;background-color:#f0f0f0;padding:10px;border-radius:3px;margin:15px 0}.button{display:inline-block;width:50%;padding:10px 20px;color:#fff;text-decoration:none;border-radius:3px;}</style>
                 </head>
                 <body>
                     <div class="container">
-                        {$tip}
-                        {$tip1}
+                        {$safeRedirect->tip}
+                        {$safeRedirect->tip1}
                         <div class="url">{$url}</div>
-                        {$tipContent}
+                        {$safeRedirect->tipContent}
                         <a id="jump" class="button" href="{$url}" rel="nofollow noopener noreferrer" style="background-color:{$safeRedirect->buttonColor};">立即前往</a>
-                        <p id="countdown">页面将在 <span id="timer">{$delay}</span> 秒后自动跳转...</p>
+                        <p id="countdown">页面将在 <span id="timer">{$safeRedirect->delay}</span> 秒后自动跳转...</p>
                     </div>
                     <script>
-                        var seconds = {$delay};
+                        var seconds = {$safeRedirect->delay};
                         var timer = document.getElementById('timer');
                         var interval = setInterval(() => {
                             seconds--;

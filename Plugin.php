@@ -1,4 +1,5 @@
 <?php
+
 namespace TypechoPlugin\SafeRedirect;
 
 use Typecho\Plugin\PluginInterface;
@@ -17,15 +18,17 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package SafeRedirect
  * @author 猫东东
- * @version 1.0.0
+ * @version 1.0.1
  * @link https://github.com/xa1st/Typecho-Plugin-SafeRedirect
  */
 
-class Plugin implements PluginInterface { 
+class Plugin implements PluginInterface
+{
     /**
      * 激活插件方法,如果激活失败,直接抛出异常
      */
-    public static function activate() {
+    public static function activate()
+    {
         // 获取当前 Typecho 版本
         $currentVersion = \Typecho\Common::VERSION;
         // 设定最低要求版本
@@ -43,7 +46,8 @@ class Plugin implements PluginInterface {
     /**
      * 禁用插件方法,如果禁用失败,直接抛出异常
      */
-    public static function deactivate() {
+    public static function deactivate()
+    {
         // 删除路由
         Helper::removeRoute('go-redirect');
     }
@@ -52,10 +56,11 @@ class Plugin implements PluginInterface {
      *
      * @param Form $form 配置面板
      */
-     /**
+    /**
      * 获取插件配置面板
      */
-    public static function config(Form $form) {
+    public static function config(Form $form)
+    {
         // 跳转延时设置
         $delay = new Text('delay', null, '5', _t('跳转延时,单位:秒'), _t('设置跳转页面的等待时间，设置为0则不进行延时'));
         $form->addInput($delay);
@@ -87,7 +92,8 @@ class Plugin implements PluginInterface {
     /**
      * 页脚输出JS脚本
      */
-    public static function footer() {
+    public static function footer()
+    {
         // 获取插件配置
         $options = Helper::options()->plugin('SafeRedirect');
         // 获取排除的URL列表
