@@ -18,7 +18,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package SafeRedirect
  * @author 猫东东
- * @version 1.0.1
+ * @version 1.0.2
  * @link https://github.com/xa1st/Typecho-Plugin-SafeRedirect
  */
 
@@ -143,6 +143,8 @@ class Plugin implements PluginInterface
                         if (href && isExternalLink(href)) {
                             // 阻止默认行为
                             e.preventDefault();
+                            // 替换链接
+                            link.setAttribute('href', '/go/' + urlSafeBase64(href));
                             // 将链接作为参数传递给action.php
                             window.location.href = '/go/' + urlSafeBase64(href);
                         }

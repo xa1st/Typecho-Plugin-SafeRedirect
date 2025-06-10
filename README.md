@@ -55,6 +55,7 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 2. 将下面内容复制至该文件中
 3. 保存并上传至主题目录
 ```php
+<?php if (!defined('__TYPECHO_ROOT_DIR__')) exit;?>
 <!DOCTYPE HTML>
 <html lang="zh-CN">
 <head>
@@ -114,7 +115,6 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 SafeRedirect/
 ├── Plugin.php          # 插件主文件
 ├── Action.php          # 跳转处理逻辑
-├── go.php.demo         # 跳转页面模板示例
 └── README.md           # 说明文档
 ```
 
@@ -172,6 +172,12 @@ blog.example.com
 - 考虑使用自定义主题模板
 
 ## 📝 更新日志
+
+### v1.0.2
+- 修复文件多次快速点击会失效的bug
+
+### v1.0.1
+- 修复已知BUG
 
 ### v1.0.0
 - 初始发布
