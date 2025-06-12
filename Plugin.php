@@ -29,14 +29,6 @@ class Plugin implements PluginInterface
      */
     public static function activate()
     {
-        // 获取当前 Typecho 版本
-        $currentVersion = \Typecho\Common::VERSION;
-        // 设定最低要求版本
-        $requiredVersion = '1.0.0';
-        // 版本比较
-        if (version_compare(\Typecho\Common::VERSION, '1.0.0', '<')) {
-            throw new Typecho_Plugin_Exception('此插件需要 Typecho ' . $requiredVersion . ' 或更高版本。当前版本：' . $currentVersion);
-        }
         // 注册路由 - 使用路径参数
         Helper::addRoute('go-redirect', '/go/[target]', '\TypechoPlugin\SafeRedirect\Action', 'redirect');
         // 注册页脚脚本钩子，用于在底部插入js

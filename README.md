@@ -12,11 +12,6 @@
 - **Base64 编码**：使用 URL 安全的 Base64 编码保护跳转地址
 - **响应式设计**：跳转页面适配移动端和桌面端
 
-## 📋 系统要求
-
-- Typecho 1.0.0 或更高版本
-- PHP 7.0 或更高版本
-
 ## 🚀 安装方法
 
 ### 方法一：直接下载
@@ -55,7 +50,6 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 2. 将下面内容复制至该文件中
 3. 保存并上传至主题目录
 ```php
-<?php if (!defined('__TYPECHO_ROOT_DIR__')) exit;?>
 <!DOCTYPE HTML>
 <html lang="zh-CN">
 <head>
@@ -115,6 +109,7 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 SafeRedirect/
 ├── Plugin.php          # 插件主文件
 ├── Action.php          # 跳转处理逻辑
+├── go.php.demo         # 跳转页面模板示例
 └── README.md           # 说明文档
 ```
 
@@ -173,11 +168,11 @@ blog.example.com
 
 ## 📝 更新日志
 
-### v1.0.2
-- 修复文件多次快速点击会失效的bug
+### v1.0.2 
+- 删除多余代码，感谢 [蚂蚱](https://qiyu.pub/)
 
 ### v1.0.1
-- 修复已知BUG
+- 修正部分bug
 
 ### v1.0.0
 - 初始发布
