@@ -18,7 +18,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
  * 
  * @package SafeRedirect
  * @author 猫东东
- * @version 1.0.2
+ * @version 1.0.3
  * @link https://github.com/xa1st/Typecho-Plugin-SafeRedirect
  */
 

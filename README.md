@@ -34,7 +34,7 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| 跳转延时 | 5 秒 | 自动跳转的等待时间，设置为 0 则不延时 |
+| 跳转延时 | 5 秒 | 自动跳转的等待时间，设置为 0 或留空则不延时立即跳转 |
 | 按钮颜色 | #007bff | 跳转按钮的背景颜色，可配合主题风格 |
 | 提示页标题 | 外链跳转 | 跳转页面的网页标题 |
 | 提示标题 | 外链跳转提示 | 跳转页面显示的主标题 |
@@ -70,22 +70,27 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
     <div class="container">
         <?php if (!empty($plugin->tip)):?><h1><?php echo $plugin->tip;?></h1><?php endif;?>
         <?php if (!empty($plugin->tip1)):?><p><?php echo $plugin->tip1;?></p><?php endif;?>
-        <div class="url"><?php echo $target; ?></div>
+        <div class="url"><?php echo htmlspecialchars($target); ?></div>
         <?php if (!empty($plugin->tipContent)):?><p><?php echo $plugin->tipContent; ?></p><?php endif;?>
-        <a id="jump" class="button" href="{$url}" rel="nofollow noopener noreferrer" style="background-color:<?php echo $plugin->buttonColor ?? '#007bff'; ?>;">立即前往</a>
-        <p id="countdown">页面将在 <span id="timer"><?php echo intval($plugin->delay);?></span> 秒后自动跳转...</p>
+        <a id="jump" class="button" href="<?php echo htmlspecialchars($target); ?>" rel="nofollow noopener noreferrer" style="background-color:<?php echo $plugin->buttonColor ?? '#007bff'; ?>;">立即前往</a>
+        <?php if (intval($plugin->delay) > 0):?><p id="countdown">页面将在 <span id="timer"><?php echo intval($plugin->delay);?></span> 秒后自动跳转...</p><?php endif;?>
     </div>
     <script>
         var seconds = <?php echo intval($plugin->delay);?>;
-        var timer = document.getElementById('timer');
-        var interval = setInterval(() => {
-            seconds--;
-            timer.textContent = seconds;
-            if (seconds <= 0) {
-                clearInterval(interval);
-                window.location.href = "<?php echo $target; ?>";
-            }
-        }, 1000);
+        if (seconds > 0) {
+            var timer = document.getElementById('timer');
+            var interval = setInterval(() => {
+                seconds--;
+                timer.textContent = seconds;
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    window.location.href = "<?php echo htmlspecialchars($target); ?>";
+                }
+            }, 1000);
+        } else {
+            // 设置为 0 秒时不延时，立即跳转
+            window.location.href = "<?php echo htmlspecialchars($target); ?>";
+        }
     </script>
 </body>
 </html>
@@ -93,15 +98,17 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 
 ### 可用变量
 
-在自定义模板中，你可以使用以下变量：
+插件向模板传递以下变量：
 
-- `$this->_target`：目标跳转地址
-- `$plugin['title']`：配置的页面标题
-- `$plugin['tip']`：配置的提示标题
-- `$plugin['tip1']`：配置的提示副标题
-- `$plugin['tipContent']`：配置的警告文字
-- `$plugin['delay']`：配置的跳转延时
-- `$plugin['buttonColor']`：配置的按钮颜色
+- `$target`：目标跳转地址（已验证为 HTTP/HTTPS 协议，输出时建议用 `htmlspecialchars()` 转义）
+- `$options`：Typecho 的全局配置对象（如 `$options->charset()`、`$options->siteUrl()` 等）
+- `$plugin`：插件配置对象（`Typecho\Config`），可用属性：
+  - `$plugin->title`：配置的页面标题
+  - `$plugin->tip`：配置的提示标题
+  - `$plugin->tip1`：配置的提示副标题
+  - `$plugin->tipContent`：配置的警告文字
+  - `$plugin->delay`：配置的跳转延时
+  - `$plugin->buttonColor`：配置的按钮颜色
 
 ## 📁 文件结构
 
@@ -109,7 +116,7 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 SafeRedirect/
 ├── Plugin.php          # 插件主文件
 ├── Action.php          # 跳转处理逻辑
-├── go.php.demo         # 跳转页面模板示例
+├── LICENSE             # 木兰宽松许可证 v2（Mulan PSL v2）
 └── README.md           # 说明文档
 ```
 
@@ -120,7 +127,7 @@ SafeRedirect/
 3. **URL 编码**：将外部链接使用 URL 安全的 Base64 编码
 4. **跳转处理**：重定向到插件路由 `/go/{encoded_url}`
 5. **页面显示**：显示跳转提示页面或使用主题自定义模板
-6. **安全跳转**：用户确认后跳转到目标地址
+6. **安全跳转**：倒计时结束或点击「立即前往」按钮后跳转到目标地址（延时为 0 时立即跳转）
 
 ## 🛡️ 安全特性
 
@@ -153,7 +160,7 @@ blog.example.com
 ## 🐛 故障排除
 
 ### 插件无法启用
-- 检查 Typecho 版本是否为 1.0.0 或更高
+- 检查 Typecho 版本是否为 1.2.0 或更高
 - 确认插件文件完整且位于正确目录
 
 ### 外链没有被拦截
@@ -167,6 +174,12 @@ blog.example.com
 - 考虑使用自定义主题模板
 
 ## 📝 更新日志
+
+### v1.0.3
+- 修复跳转延时处理：负数按 0 处理，留空或非法值视为 0（不延时立即跳转）
+- 延时为 0 时不再显示倒计时文字，直接立即跳转
+- 修正自定义模板示例中的变量错误，示例输出增加 `htmlspecialchars` 转义
+- 清理未使用的代码
 
 ### v1.0.2 
 - 删除多余代码，感谢 [蚂蚱](https://qiyu.pub/)
@@ -193,7 +206,7 @@ blog.example.com
 
 ## 📜 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 [木兰宽松许可证 v2（Mulan PSL v2）](https://spdx.org/licenses/MulanPSL-2.0.html) 授权 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
 ## 👨‍💻 作者
 

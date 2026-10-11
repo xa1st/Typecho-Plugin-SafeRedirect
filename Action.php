@@ -2,7 +2,6 @@
 namespace TypechoPlugin\SafeRedirect;
 
 use Typecho\Widget;
-use Typecho\Db;
 use Typecho\Plugin\Exception as PluginException;
 
 // 防止直接运行
@@ -75,8 +74,13 @@ class Action extends Widget {
         $safeRedirect->tip = $safeRedirect->tip ? "<h1>{$safeRedirect->tip}</h1>" : '';
         // 获取跳转副标题
         $safeRedirect->tip1 = $safeRedirect->tip1 ? "<p>{$safeRedirect->tip1}</p>" : '';
-        // 获取跳转延时
-        $safeRedirect->delay = intval($safeRedirect->delay) ?? 5;
+        // 获取跳转延时：负数按 0 处理，留空或非法值视为 0（不延时立即跳转）
+        $delay = trim((string) ($safeRedirect->delay ?? ''));
+        $safeRedirect->delay = $delay === '' ? 5 : max(0, intval($delay));
+        // 延时为 0 时不显示倒计时文字
+        $countdown = $safeRedirect->delay > 0
+            ? "<p id=\"countdown\">页面将在 <span id=\"timer\">{$safeRedirect->delay}</span> 秒后自动跳转...</p>"
+            : '';
         // 获取安全警告内容
         $safeRedirect->tipContent = $safeRedirect->tipContent ? "<p>{$safeRedirect->tipContent}</p>" : '';
         // 获取按钮颜色
@@ -98,19 +102,24 @@ class Action extends Widget {
                         <div class="url">{$url}</div>
                         {$safeRedirect->tipContent}
                         <a id="jump" class="button" href="{$url}" rel="nofollow noopener noreferrer" style="background-color:{$safeRedirect->buttonColor};">立即前往</a>
-                        <p id="countdown">页面将在 <span id="timer">{$safeRedirect->delay}</span> 秒后自动跳转...</p>
+                        {$countdown}
                     </div>
                     <script>
                         var seconds = {$safeRedirect->delay};
-                        var timer = document.getElementById('timer');
-                        var interval = setInterval(() => {
-                            seconds--;
-                            timer.textContent = seconds;
-                            if (seconds <= 0) {
-                                clearInterval(interval);
-                                window.location.href = "{$url}";
-                            }
-                        }, 1000);
+                        if (seconds > 0) {
+                            var timer = document.getElementById('timer');
+                            var interval = setInterval(() => {
+                                seconds--;
+                                timer.textContent = seconds;
+                                if (seconds <= 0) {
+                                    clearInterval(interval);
+                                    window.location.href = "{$url}";
+                                }
+                            }, 1000);
+                        } else {
+                            // 设置为 0 秒时不延时，立即跳转
+                            window.location.href = "{$url}";
+                        }
                     </script>
                 </body>
             </html>
