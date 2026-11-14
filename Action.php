@@ -9,8 +9,15 @@ if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 class Action extends Widget {
     /**
+     * 全局配置组件，供跳转模板使用 $this->options
+     *
+     * @var \Widget\Options
+     */
+    public $options;
+
+    /**
      * 处理重定向逻辑，验证目标地址并渲染跳转页面或直接跳转
-     * 
+     *
      * 函数通过请求参数获取base64编码的目标地址，进行格式校验后，根据主题模板配置
      * 决定使用模板渲染跳转页面或执行默认跳转逻辑。包含以下核心流程：
      * 1. 解码并验证目标地址格式
@@ -48,6 +55,8 @@ class Action extends Widget {
         if ($options->theme && is_file($file)) {
             // 获取主题配置
             $safeRedirect = $options->plugin('SafeRedirect');
+            // 挂载全局配置组件，供模板使用 $this->options
+            $this->options = $options;
             // 渲染自定义跳转模板，位置主题目录下的go.php，还要支持模板变量
             $template_vars = ['target' => $target, 'options' => $options, 'plugin' => $safeRedirect];
             // 将变量提取到当前作用域
@@ -58,6 +67,16 @@ class Action extends Widget {
             // 当模板不存在时执行基础跳转逻辑
             $this->_defaultRedirect($target);
         }
+    }
+
+    /**
+     * 包含主题目录下的模板文件，与主题模板中的 $this->need() 行为一致
+     *
+     * @param string $fileName 主题目录下的文件名，如 header.php、footer.php
+     */
+    public function need(string $fileName)
+    {
+        require __TYPECHO_ROOT_DIR__ . __TYPECHO_THEME_DIR__ . '/' . $this->options->theme . '/' . $fileName;
     }
 
      /**
@@ -76,7 +95,7 @@ class Action extends Widget {
         $safeRedirect->tip1 = $safeRedirect->tip1 ? "<p>{$safeRedirect->tip1}</p>" : '';
         // 获取跳转延时：负数按 0 处理，留空或非法值视为 0（不延时立即跳转）
         $delay = trim((string) ($safeRedirect->delay ?? ''));
-        $safeRedirect->delay = $delay === '' ? 5 : max(0, intval($delay));
+        $safeRedirect->delay = $delay === '' ? 0 : max(0, intval($delay));
         // 延时为 0 时不显示倒计时文字
         $countdown = $safeRedirect->delay > 0
             ? "<p id=\"countdown\">页面将在 <span id=\"timer\">{$safeRedirect->delay}</span> 秒后自动跳转...</p>"
@@ -128,7 +147,7 @@ class Action extends Widget {
 
     /**
      * 解码URL安全的Base64编码字符串
-     * 
+     *
      * 该函数将URL安全字符(-和_)替换回标准Base64字符(+和/)，补足缺失的填充符"="，
      * 最终执行标准Base64解码。处理过程包含以下步骤：
      * 1. 替换URL安全字符为标准Base64字符

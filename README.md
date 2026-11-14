@@ -40,7 +40,7 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
 | 提示标题 | 外链跳转提示 | 跳转页面显示的主标题 |
 | 提示副标题 | 您正在离开本站，前往以下网址： | 跳转提示的副标题文字 |
 | 跳转警告语 | 请注意，我们无法保证... | 安全警告提示文字 |
-| 排除的URL | 空 | 不需要跳转提示的域名列表，一行一个 |
+| 排除的URL | 空 | 不需要跳转提示的域名列表，一行一个，整域名及其子域名生效 |
 
 ## 🎨 自定义跳转页面(可选)
 
@@ -110,6 +110,15 @@ git clone https://github.com/xa1st/Typecho-Plugin-SafeRedirect.git SafeRedirect
   - `$plugin->delay`：配置的跳转延时
   - `$plugin->buttonColor`：配置的按钮颜色
 
+### $this 上下文
+
+模板中 `$this` 是插件的跳转处理组件，额外提供：
+
+- `$this->options`：全局配置组件，与 `$options` 是同一实例（如 `$this->options->siteUrl()`）
+- `$this->need('header.php')`：包含主题目录下的其他模板文件，与主题模板中的用法一致
+
+注意：`$this` 不是 `Widget_Archive` 归档组件，主题 header.php 中若调用 `$this->header()`、`$this->footer()`、`$this->archiveTitle()` 等归档组件特有的方法将不可用。
+
 ## 📁 文件结构
 
 ```
@@ -117,6 +126,7 @@ SafeRedirect/
 ├── Plugin.php          # 插件主文件
 ├── Action.php          # 跳转处理逻辑
 ├── LICENSE             # 木兰宽松许可证 v2（Mulan PSL v2）
+├── CHANGELOG.md        # 更新日志
 └── README.md           # 说明文档
 ```
 
@@ -125,7 +135,7 @@ SafeRedirect/
 1. **前端拦截**：插件在页面底部注入 JavaScript 代码，监听所有链接点击事件
 2. **外链检测**：判断链接是否为外部域名，排除白名单中的域名
 3. **URL 编码**：将外部链接使用 URL 安全的 Base64 编码
-4. **跳转处理**：重定向到插件路由 `/go/{encoded_url}`
+4. **跳转处理**：重定向到插件路由 `/go/{encoded_url}`（地址由 Typecho 路由生成，自动适配子目录安装与 rewrite 设置）
 5. **页面显示**：显示跳转提示页面或使用主题自定义模板
 6. **安全跳转**：倒计时结束或点击「立即前往」按钮后跳转到目标地址（延时为 0 时立即跳转）
 
@@ -175,24 +185,7 @@ blog.example.com
 
 ## 📝 更新日志
 
-### v1.0.3
-- 修复跳转延时处理：负数按 0 处理，留空或非法值视为 0（不延时立即跳转）
-- 延时为 0 时不再显示倒计时文字，直接立即跳转
-- 修正自定义模板示例中的变量错误，示例输出增加 `htmlspecialchars` 转义
-- 清理未使用的代码
-
-### v1.0.2 
-- 删除多余代码，感谢 [蚂蚱](https://qiyu.pub/)
-
-### v1.0.1
-- 修正部分bug
-
-### v1.0.0
-- 初始发布
-- 基础外链拦截功能
-- 可配置跳转页面
-- 支持主题自定义模板
-- URL 白名单功能
+所有版本的详细更新日志见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 🤝 贡献
 
